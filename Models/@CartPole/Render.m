@@ -30,7 +30,7 @@ end
     x     = s(1);
     theta = s(3);
 
-    action = Env.A(a);
+    action = a;
     
     l = 2; %length of pole
     w = 0.6; %half width of cart

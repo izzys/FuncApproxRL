@@ -22,14 +22,14 @@ function varargout = faRLgui(varargin)
 
 % Edit the above text to modify the response to help RLgui
 
-% Last Modified by GUIDE v2.5 01-Dec-2015 12:31:30
+% Last Modified by GUIDE v2.5 17-Jan-2016 17:26:26
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
 gui_State = struct('gui_Name',       mfilename, ...
                    'gui_Singleton',  gui_Singleton, ...
-                   'gui_OpeningFcn', @RLgui_OpeningFcn, ...
-                   'gui_OutputFcn',  @RLgui_OutputFcn, ...
+                   'gui_OpeningFcn', @faRLgui_OpeningFcn, ...
+                   'gui_OutputFcn',  @faRLgui_OutputFcn, ...
                    'gui_LayoutFcn',  [] , ...
                    'gui_Callback',   []);
 if nargin && ischar(varargin{1})
@@ -44,7 +44,7 @@ end
 % End initialization code - DO NOT EDIT
 
 % --- Executes just before RLgui is made visible.
-function RLgui_OpeningFcn(hObject, eventdata, handles, varargin)
+function faRLgui_OpeningFcn(hObject, eventdata, handles, varargin)
 % This function has no output args, see OutputFcn.
 % hObject    handle to figure
 % eventdata  reserved - to be defined in a future version of MATLAB
@@ -62,24 +62,23 @@ handles.output = hObject;
  % set here model names:
  model_handle = handles.popupmenu1;
  set(model_handle, 'String',{ 'Select model...',...
-                              'Grid world',...          % Model #1
-                              'Cart pole',...           % Model #2
+                              'Cart pole',...           % Model #1
+                              'Mountain car',...        % Model #2
+                              'Acrobot',...             % Model #3
+                              'Random walk',...         % Model #4
                               [] } );
 
 
  % set here method names:
 method_handle = handles.popupmenu2;
-set(method_handle, 'String',{ 'Select method...',...
-                              'Dynamic programing',...  % Method #1
-                              'SARSA',...               % Method #2
-                              'Q learning',...          % Method #3
-                              'SARSA lambda',...        % Method #4
-                              'Q lambda',...            % Method #5
+set(method_handle, 'String',{ 'Select method...',...  
+                              'Q actor-critic',...         % Method #1
+                              'TD lambda actor-critic',... % Method #2
+                              'Natural actor-critic',...   % Method #3
                               [] } );
 
-  
  % create RL agent:
-handles.RL = ReinforcementLearning();
+handles.RL = faRL();
 
 % Update handles structure
 guidata(hObject, handles)
@@ -90,9 +89,9 @@ lambda_handle = handles.edit12;
 alpha_handle = handles.edit2;
 alpha_decrease_handle = handles.checkbox2;
 alpha_decrease_val_handle = handles.edit5;
-eps_handle = handles.edit6;
-eps_decrease_handle = handles.checkbox4;
-eps_decrease_val_handle = handles.edit7;
+beta_handle = handles.edit6;
+beta_decrease_handle = handles.checkbox4;
+beta_decrease_val_handle = handles.edit7;
 max_steps_handle = handles.edit11;
 plot_learning_handle = handles.axes2;
 plot_Q_handle = handles.axes3;
@@ -106,9 +105,9 @@ lambda = get(lambda_handle,'String');                        % Param #3
 alpha = get(alpha_handle,'String');                          % Param #4
 alpha_decreass = get(alpha_decrease_handle,'Value');         % Param #5
 alpha_decrease_val = get(alpha_decrease_val_handle,'String');% Param #6
-eps = get(eps_handle,'String');                              % Param #7
-eps_decreass = get(eps_decrease_handle,'Value');             % Param #8
-eps_decrease_val = get(eps_decrease_val_handle,'String');    % Param #9
+beta = get(beta_handle,'String');                            % Param #7
+beta_decreass = get(beta_decrease_handle,'Value');           % Param #8
+beta_decrease_val = get(beta_decrease_val_handle,'String');  % Param #9
 max_steps = get(max_steps_handle,'String');                  % Param #10
 replacing_traces = get(rep_trc_handle,'Value');              % Param #11
 enable_rand_IC = get(enable_rand_IC_handle,'Value');         % Param #12
@@ -120,9 +119,9 @@ Facade(handles.RL,'Init',gamma,...
                         alpha,...
                         alpha_decreass,...
                         alpha_decrease_val,...
-                        eps,...
-                        eps_decreass,...
-                        eps_decrease_val,...
+                        beta,...
+                        beta_decreass,...
+                        beta_decrease_val,...
                         max_steps,...
                         replacing_traces,...
                         enable_rand_IC,...
@@ -134,7 +133,7 @@ Facade(handles.RL,'Init',gamma,...
                         []);
                         
 % --- Outputs from this function are returned to the command line.
-function varargout = RLgui_OutputFcn(hObject, eventdata, handles) 
+function varargout = faRLgui_OutputFcn(hObject, eventdata, handles) 
 % varargout  cell array for returning output args (see VARARGOUT);
 % hObject    handle to figure
 % eventdata  reserved - to be defined in a future version of MATLAB
@@ -261,7 +260,7 @@ if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgr
 end
 
 % --- Executes on slider movement.
-function slider_eps_Callback(hObject, eventdata, handles)
+function slider_beta_Callback(hObject, eventdata, handles)
 
 % hObject    handle to slider6 (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
@@ -270,14 +269,14 @@ function slider_eps_Callback(hObject, eventdata, handles)
 % Hints: get(hObject,'Value') returns position of slider
 %        get(hObject,'Min') and get(hObject,'Max') to determine range of slider
 
-eps = get(hObject,'Value');
-eps_handle = handles.edit6;
-set(eps_handle,'String',eps)
+beta = get(hObject,'Value');
+beta_handle = handles.edit6;
+set(beta_handle,'String',beta)
 
-Facade(handles.RL,'HandleEpsCB',eps);
+Facade(handles.RL,'HandleBetaCB',beta);
 
 % --- Executes during object creation, after setting all properties.
-function slider_eps_CreateFcn(hObject, eventdata, handles)
+function slider_beta_CreateFcn(hObject, eventdata, handles)
 % hObject    handle to slider6 (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    empty - handles not created until after all CreateFcns called
@@ -287,26 +286,26 @@ if isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColo
     set(hObject,'BackgroundColor',[.9 .9 .9]);
 end
 
-function edit_epsilon_Callback(hObject, eventdata, handles)
+function edit_beta_Callback(hObject, eventdata, handles)
 % hObject    handle to edit6 (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 % Hints: get(hObject,'String') returns contents of edit6 as text
 %        str2double(get(hObject,'String')) returns contents of edit6 as a double
 
-eps = get(hObject,'String');
-eps = str2double(eps);
-eps_handle = handles.slider6;
-max_val  = get(eps_handle,'Max');
-min_val  = get(eps_handle,'Min');
-eps = min(max_val,max(min_val,eps));
-set(hObject,'String',eps)
-set(eps_handle,'Value',eps)
+beta = get(hObject,'String');
+beta = str2double(beta);
+beta_handle = handles.slider6;
+max_val  = get(beta_handle,'Max');
+min_val  = get(beta_handle,'Min');
+beta = min(max_val,max(min_val,beta));
+set(hObject,'String',beta)
+set(beta_handle,'Value',beta)
 
-Facade(handles.RL,'HandleEpsCB',eps);
+Facade(handles.RL,'HandleBetaCB',beta);
 
 % --- Executes during object creation, after setting all properties.
-function edit_epsilon_CreateFcn(hObject, eventdata, handles)
+function edit_beta_CreateFcn(hObject, eventdata, handles)
 % hObject    handle to edit6 (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    empty - handles not created until after all CreateFcns called
@@ -622,7 +621,7 @@ min_val  = get(hObject,'Min');
 val = min(max_val,max(min_val,val));
 set(hObject,'String',val)
 
-Facade(handles.RL,'HandleEpsDecreaseValCB',val)
+Facade(handles.RL,'HandleBetaDecreaseValCB',val)
 
 % --- Executes during object creation, after setting all properties.
 function edit7_CreateFcn(hObject, eventdata, handles)
@@ -646,17 +645,17 @@ function checkbox4_Callback(hObject, eventdata, handles)
 val = get(hObject,'Value');
 
 edit_handle = handles.edit7; 
-eps_decrease_val = get(edit_handle,'String');
-eps_decrease_val = str2double(eps_decrease_val);
+beta_decrease_val = get(edit_handle,'String');
+beta_decrease_val = str2double(beta_decrease_val);
 
 if val 
   set(edit_handle,'Enable','on')  
-  Facade(handles.RL,'HandleEpsDecreaseValCB',eps_decrease_val)
+  Facade(handles.RL,'HandleBetaDecreaseValCB',beta_decrease_val)
 else
   set(edit_handle,'Enable','off')      
 end
 
-Facade(handles.RL,'HandleEpsDecreaseCB',val)
+Facade(handles.RL,'HandleBetaDecreaseCB',val)
 
 % --- Executes during object creation, after setting all properties.
 function axes2_CreateFcn(hObject, eventdata, handles)
@@ -930,3 +929,5 @@ function checkbox6_Callback(hObject, eventdata, handles)
 % Hint: get(hObject,'Value') returns toggle state of checkbox6
 val = get(hObject,'Value');
 Facade(handles.RL,'HandleReplacingTracesCB',val)
+
+

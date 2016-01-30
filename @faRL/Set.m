@@ -14,18 +14,18 @@ else
         
         switch key
 
-            case 'eps'
-                RL.eps = value; 
-            case 'eps_decrease'
-                RL.eps_decrease = value;
-            case 'eps_decrease_val'
-                RL.eps_decrease_val = value;  
             case 'alpha'
                 RL.alpha = value;
             case 'alpha_decrease'
                 RL.alpha_decrease = value;
             case 'alpha_decrease_val'
                 RL.alpha_decrease_val = value; 
+            case 'beta'
+                RL.beta = value; 
+            case 'beta_decrease'
+                RL.beta_decrease = value;
+            case 'beta_decrease_val'
+                RL.beta_decrease_val = value;   
             case 'gamma'
                 RL.gamma = value; 
             case 'max_steps'

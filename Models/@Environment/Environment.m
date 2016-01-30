@@ -11,6 +11,14 @@ classdef  Environment < handle
         
         const_IC;
         random_IC;
+        
+        %Policy function:
+        Wdim;
+        W;
+        
+        % discritixation matrix:
+        dX;
+        dA;
     end
     
     methods

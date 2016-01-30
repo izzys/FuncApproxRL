@@ -1,4 +1,4 @@
-classdef RL < handle
+classdef faRL < handle
  
     properties 
         
@@ -13,31 +13,33 @@ classdef RL < handle
         % that SelectedModel is in the Matlab path and that is follows the 
         % Environment empty template given in the Models folder.
         Env;
-        
-        % Contains a cell with a list of available methods. Each method
-        % name must match the name of its corresponding scriptin the Methods 
-        % folder. Make sure that the list order matches the order of the
-        % method list in RLgui:
-        MethodList = {'SARSA_lambda',...
-                      'Q_lambda',...
-                      []};
-            
+                    
         % Contains a cell with a list of available models. Each model name 
         % must match the name of its corresponding class in the Models folder,
         % with a parenthesis added.  Make sure that the list order matches the 
         % order of the model list in RLgui.:
         ModelList = {'CartPole()',... 
+                     'MountainCar()',... 
                      'AcroBot()',...
+                     'RandomWalk()',...
                      []};
+                 
+        % Contains a cell with a list of available methods. Each method
+        % name must match the name of its corresponding scriptin the Methods 
+        % folder. Make sure that the list order matches the order of the
+        % method list in RLgui:         
+        MethodList = {  'Q_actor_critic',...         % Method #1
+                        'TD_actor_critic',...        % Method #2
+                        'Natural_actor_critic' }     % Method #3
         
         % learning parameters:       
         gamma;
         alpha;
-        alpha_decrease;
+        alpha_decrease; 
         alpha_decrease_val
-        eps;
-        eps_decrease;
-        eps_decrease_val;
+        beta;
+        beta_decrease; 
+        beta_decrease_val
         max_steps ;
              
         % Running params:
@@ -48,15 +50,26 @@ classdef RL < handle
         delta;
         
         % Eligibility traces params:
-        lambda
-        E;
+        lambda;
+        Ev;
+        Ew
         replacing_traces;
 
+        % Value function weights:
+        V;
+     %   Vdim;
+        VnTilings;
+        V_memory_size;
+        VnFeatures;
         
-        % inital conditions for each episode:
+        % State and action dim:
+        Xdim;
+        Adim;
+        
+        % Inital conditions for each episode:
         enable_random_IC;
         
-        % graphics:
+        % Graphics:
         graphics;
         plot_learning_handle;
         plot_Q_handle;
@@ -75,7 +88,7 @@ classdef RL < handle
     methods
         
         % class constructor:
-        function [RL] = RL(varargin)
+        function [RL] = faRL(varargin)
             
              switch nargin
             
@@ -92,6 +105,18 @@ classdef RL < handle
         function [] = Init(RL,varargin)
             
             RL.Env.Init();
+            
+            RL.Xdim =  RL.Env.Xdim;
+            RL.Adim =  RL.Env.Adim;
+            
+      %      RL.Wdim = RL.Env.Wdim; % policy function weights
+       %     RL.Vdim = 64; % value function weights
+            
+            RL.Env.W = unifrnd(-1,1,RL.Env.Adim,RL.Env.Wdim);
+           % RL.V = 2*rand(RL.Vdim,1)-1;
+            
+            
+          %  RL.Ew = zeros(RL.Wdim,1);
             
             RL.StopLearn = 0;
             
@@ -118,6 +143,34 @@ classdef RL < handle
             xlabel(RL.plot_learning_handle,'Episodes')
             ylabel(RL.plot_learning_handle,'Reward') 
             
+            % try to MEX the tiles software untill it is done succefluly:
+            mex_ok = 0;
+            while ~mex_ok
+                try
+                    mex Tiles\GetTiles_Mex.cpp Tiles\tiles.cpp
+                    mex_ok = 1;
+                catch error
+                    mex_ok = 0;
+                    disp(error.message)
+                    disp('trying to mex again')
+                end
+            end
+            
+            
+            % the number of patches considered to be a unit: 
+            RL.VnTilings     = 2^4;
+
+            % The total number of binary features (add 2 for safty in hashing): 
+            mult_nx = 1;
+            for i = 1:length( RL.Env.Xdim )
+                mult_nx = mult_nx*( RL.Env.Xdim(i) + 2 );
+            end
+            
+            RL.VnFeatures = RL.VnTilings*mult_nx; 
+
+            RL.V_memory_size = RL.VnFeatures ;  
+            RL.V = zeros(RL.V_memory_size); 
+            RL.Ev = zeros(RL.V_memory_size);
         end
           
         % Start and run the learning process:
@@ -151,15 +204,15 @@ classdef RL < handle
                 [total_reward,steps] = RL.LearningEpisode(); 
 
                 disp(['Espisode: ',int2str(episode),'  Steps:',int2str(steps),'  Reward:',num2str(total_reward)])
-
-                if RL.eps_decrease
-                    RL.eps = RL.eps_decrease_val*RL.eps;
-                    RL.Facade('PassEpsUpdated');
-                end
-                    
+             
                 if RL.alpha_decrease
                     RL.alpha = RL.alpha_decrease_val*RL.alpha;
                     RL.Facade('PassAlphaUpdated');
+                end
+                
+                if RL.beta_decrease
+                    RL.beta = RL.beta_decrease_val*RL.beta;
+                    RL.Facade('PassBetaUpdated');
                 end
                  
                 RL.PlotLearningCurve(episode,total_reward,steps)
@@ -178,15 +231,14 @@ classdef RL < handle
         end
         
         % Get action for next step - based on current policy:
-        function [a] = GetAction(RL,s)
+        function [a] = GetAction(RL,x)
           
-            if ~isempty(RL.Env.Adim)
-                if isempty(RL.MethodFcn)
-                    a = randi(RL.Env.Adim);
-                else
-                    a = feval(RL.MethodFcn,RL,'GetBestAction',s) ;
-                end           
+            if ~isempty(RL.Env)
+                
+                a = RL.Env.PolicyFcn('GetAction',x);
+          
             else
+                
                 error('Model must be selected first')
             end 
             
@@ -199,14 +251,18 @@ classdef RL < handle
                 RL.Init();
             end
             
+            % reset eligibility traces:
+            RL.Ev = zeros(RL.V_memory_size);
+            
+            % reset model to initial conditions:
             RL.Env.Init();
             
-            [total_reward,steps] = feval(RL.MethodFcn,RL,'RunEpisode') ;
+            [total_reward,steps] = RL.RunEpisode() ;
                  
         end
         
         % An episode for demonstration of learned policy:
-        function [total_reward,steps] = Episode(RL)
+        function [total_reward,steps] = DemoEpisode(RL)
   
             if ~RL.InitDone
                 RL.Init();
@@ -215,18 +271,22 @@ classdef RL < handle
             RL.Env.Init();
             
             if RL.enable_random_IC
-                x  = str2num( RL.Env.random_IC );
+                x  = eval( RL.Env.random_IC );
             else
                 x = RL.Env.const_IC;
             end
 
+            [row_dim,col_dim] = size(x);
+            if col_dim>row_dim
+                x = x';
+            end
+            
+            
             steps        = 0;
             total_reward = 0;
 
-            % convert the continous state variables to an index of the statelist:
-            s   = RL.Env.DiscretizeState(x);
             % selects an action using the current strategy:
-            a   = RL.GetAction(s);
+            a   = RL.GetAction(x);
 
             RL.StopSim = 0;
 
@@ -240,11 +300,8 @@ classdef RL < handle
                 stop_episode = RL.Env.IsTerminal(x,a);
                 total_reward = total_reward + (RL.gamma)^steps*r;
 
-                % convert the continous state variables in [xp] to an index of the statelist    
-                sp  = RL.Env.DiscretizeState(xp);
-
                 % select action prime
-                ap = RL.GetAction(sp);
+                ap = RL.GetAction(xp);
 
                 % Plot of the model
                 if RL.graphics        
@@ -267,7 +324,7 @@ classdef RL < handle
                  
         end
         
-        % Stop the episode;
+        % Stop an episode:
         function [] = StopEpisode(RL)
             
             RL.StopSim=1;
@@ -281,12 +338,13 @@ classdef RL < handle
           RL.Ypoints(episode)=total_reward;    
 
           set(RL.PlotObj.curve,'Xdata',RL.Xpoints,'Ydata',RL.Ypoints)  
-          set(RL.PlotObj.title,'String',['Episode: ',int2str(episode), '  steps: ',num2str(steps) , '  epsilon: ',num2str(RL.eps) , '  alpha: ' num2str(RL.alpha)]) 
+          set(RL.PlotObj.title,'String',['Episode: ',int2str(episode), '  steps: ',num2str(steps) , '  alpha: ' num2str(RL.alpha) , '  beta: ',num2str(RL.beta)] ) 
           drawnow
           
           
           axes(RL.plot_Q_handle)  
-          imagesc(RL.Q)    
+          
+          RL.ValueFcn('Plot')
           
           set(RL.plot_Q_handle,'XTick',[],...
                                'YTick',[],... 
@@ -300,9 +358,7 @@ classdef RL < handle
         function [] = ClearLearningCurve(RL)
             
             cla(RL.plot_Q_handle)
-            cla(RL.plot_learning_handle )
-            RL.Init();
-            
+            cla(RL.plot_learning_handle )           
           
         end
    end

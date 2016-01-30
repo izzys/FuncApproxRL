@@ -1,11 +1,12 @@
-disp('Installing RL toolbox ... ')
+disp('Installing faRL  ... ')
 
 currentFolder = pwd;
 
 addpath(currentFolder)
-addpath([currentFolder, '\Methods']);
 addpath([currentFolder, '\Models']);
+addpath([currentFolder, '\Tiles']);
+addpath([currentFolder, '\Methods']);
 
 savepath 
 
-disp('Done! type RLgui in comand window to start toolbox.');
+disp('Done! type faRLgui in comand window to start toolbox.');

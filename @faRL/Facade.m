@@ -24,11 +24,11 @@ HandleAlphaDecreaseCB(RL,[],varargin{5})
 if nargin>=6
 HandleAlphaDecreaseValCB(RL,[],varargin{6})
 if nargin>=7
-HandleEpsCB(RL,[],varargin{7})
+HandleBetaCB(RL,[],varargin{7})
 if nargin>=8
-HandleEpsDecreaseCB(RL,[],varargin{8})
+HandleBetaDecreaseCB(RL,[],varargin{8})
 if nargin>=9
-HandleEpsDecreaseValCB(RL,[],varargin{9})
+HandleBetaDecreaseValCB(RL,[],varargin{9})
 if nargin>=10
 HandleNofMaxStepsCB(RL,[],varargin{10})
 if nargin>=11
@@ -61,22 +61,22 @@ end
 
 % ---- Incoming data to pass to RL:
 
-function [] = HandleEpsCB(RL,varargin)
+function [] = HandleBetaCB(RL,varargin)
 
-    eps =  varargin{2};
-    if ischar(eps) ; eps = str2double(eps) ; end
-    Set(RL,'eps',eps);
+    beta =  varargin{2};
+    if ischar(beta) ; beta = str2double(beta) ; end
+    Set(RL,'beta',beta);
 
-function [] = HandleEpsDecreaseValCB(RL,varargin)
+function [] = HandleBetaDecreaseValCB(RL,varargin)
 
     val =  varargin{2};
     if ischar(val) ; val = str2double(val) ; end
-    Set(RL,'eps_decrease_val',val);
+    Set(RL,'beta_decrease_val',val);
 
-function [] = HandleEpsDecreaseCB(RL,varargin)
+function [] = HandleBetaDecreaseCB(RL,varargin)
 
-    eps_decrease =  varargin{2};
-    Set(RL,'eps_decrease',eps_decrease);
+    beta_decrease =  varargin{2};
+    Set(RL,'beta_decrease',beta_decrease);
 
 function [] = HandleAlphaCB(RL,varargin)
 
@@ -126,6 +126,7 @@ RL.StartLearning(varargin{2},varargin{3},varargin{4});
 function [] = HandleStopLearningCB(RL,varargin)
 
 RL.StopLearning();
+RL.StopEpisode();
 
 function [] = HandleModelGraphicsCB(RL,varargin)
 graphics = varargin{2};
@@ -190,7 +191,7 @@ end
 
 function [] = HandleRunEpisodeCB(RL,varargin)
 
-RL.Episode();
+RL.DemoEpisode();
 
 function [] = HandleStopEpisodeCB(RL,varargin)
 
@@ -217,12 +218,12 @@ RL.ClearLearningCurve()
 
 % ------------ Outgoing data to pass to GUI:
 
-function [] = PassEpsUpdated(RL,varargin)
+function [] = PassBetaUpdated(RL,varargin)
 handles = guidata(RL.figure_handle);
-edit_eps_handle = handles.edit6;
-slider_eps_handle = handles.slider6;
-set(edit_eps_handle,'String',num2str(RL.eps))
-set(slider_eps_handle,'value',RL.eps)
+edit_beta_handle = handles.edit6;
+slider_beta_handle = handles.slider6;
+set(edit_beta_handle,'String',num2str(RL.beta))
+set(slider_beta_handle,'value',RL.beta)
 
 function [] = PassAlphaUpdated(RL,varargin)
 handles = guidata(RL.figure_handle);

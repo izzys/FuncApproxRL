@@ -1,17 +1,11 @@
 classdef  CartPole < handle
 
     properties 
-
-        S; % States 
-        A = -1:0.1:1; % Available actions
-      
-        Adim;
-        Sdim;
         
         const_IC = [0 0 0.1 0] ;
         random_IC = '0.1*[rand()-0.5 rand()-0.5 rand()-0.5 rand()-0.5 ]';
         
-        % discritization params:
+        %  state params:
         x1_min = -1;
         x1_max =  1;
         x1_dim = 3;
@@ -28,10 +22,26 @@ classdef  CartPole < handle
         x4_max = 1;
         x4_dim = 3;
         
+        % control params:
+        a_min = -1;
+        a_max = 1;
+        a_dim = 21;
+        
+        
         % render
         RenderObj;
         
+        % dim:
+        Xdim;
+        Adim = 1;
         
+        % discritixation matrix:
+        dX;
+        dA;
+        
+        %Policy function:
+        Wdim = 2;
+        W;
     end
     
     methods
@@ -45,10 +55,7 @@ classdef  CartPole < handle
         %%%    ~  Abstract fucntions ~  %%%
         
         function [] = Init(Env)
-                       
-            Env.BuildStateList();           
-            Env.Sdim = size(Env.S,1);
-            Env.Adim = length(Env.A);
+                               
             
             if ~isempty(Env.RenderObj)
                 
@@ -67,6 +74,16 @@ classdef  CartPole < handle
             else
                 Env.RenderObj = [];
             end
+            
+            Env.Xdim = [Env.x1_dim Env.x2_dim Env.x3_dim Env.x4_dim];
+            
+            
+            Env.dX(1) = diff([ Env.x1_min  Env.x1_max ])/ Env.x1_dim ;
+            Env.dX(2) = diff([ Env.x2_min  Env.x2_max ])/ Env.x2_dim ;
+            Env.dX(3) = diff([ Env.x3_min  Env.x3_max ])/ Env.x3_dim ;
+            Env.dX(4) = diff([ Env.x4_min  Env.x4_max ])/ Env.x4_dim ;
+                   
+            Env.dA  = [ Env.a_min  Env.a_max  Env.a_dim]; 
             
         end
 
@@ -108,7 +125,7 @@ classdef  CartPole < handle
             Tau             = 0.02;     %Time interval for updating the values
             Fourthirds      = 4.0/3.0;
 
-            force = Force_Mag*Env.A(a);
+            force = Force_Mag*a;
 
             temp     = (force + PoleMass_Length * theta_dot * theta_dot * sin(theta)) / Total_Mass;
             thetaacc = (g * sin(theta) - cos(theta) * temp) / (Length * (Fourthirds - Mass_Pole * cos(theta) * cos(theta) / Total_Mass));
@@ -145,61 +162,11 @@ classdef  CartPole < handle
             
         
         %%%    ~  Added fucntions ~  %%%
-        
-        
-        function [ s ] = DiscretizeState( Env , x  )
-          
-            %DiscretizeState check which entry in the state list is more close to x and
-            %return the index of that entry.
-
-            statelist = Env.S;
-
-            x(1) = sign(x(1));
-            x(2) = sign(x(2));
-            x(4) = sign(x(4));
-
-            x = repmat(x,Env.Sdim,1);
-
-            [~ , s] = min(Env.edist(statelist,x));
-
-        end
-        
-        function [ d ] = edist( Env, x , y )
-            %edist euclidean distance between two vectors
-            d = sqrt( sum( (x-y).^2,2 ) );
-        end
-                
-        
         function [ind] = subsindex(Env)
             ind = 0;
         end
 
 
-        function [] = BuildStateList(Env)
-
-            % state discretization for the mountain car problem
-
-            x1 = linspace(Env.x1_min,Env.x1_max,Env.x1_dim);
-            x2 = linspace(Env.x2_min,Env.x2_max,Env.x2_dim);
-            x3 = linspace(Env.x3_min,Env.x3_max,Env.x3_dim);
-            x4 = linspace(Env.x4_min,Env.x4_max,Env.x4_dim);
-           
-            index=1;
-            for i=1:Env.x1_dim    
-                for j=1:Env.x2_dim  
-                    for k=1:Env.x3_dim 
-                        for l=1:Env.x4_dim
-                            Env.S(index,1)=x1(i);
-                            Env.S(index,2)=x2(j);
-                            Env.S(index,3)=x3(k);
-                            Env.S(index,4)=x4(l);
-                            index=index+1;
-                        end
-                    end
-                end
-            end
-            
-        end
               
 
 
