@@ -31,7 +31,7 @@ classdef  RandomWalk < handle
         RenderObj;
         
         %Policy function:
-        Wdim = 2;
+        Wdim = 1;
         W; 
 
         % discritixation matrix:
@@ -82,7 +82,13 @@ classdef  RandomWalk < handle
         function [ r ] = GetReward(Env,x,a)
             
            r = -sse(x);
-            
+           
+           if sse(x)<0.1
+                r=5-sse(x);
+            end
+            if sse(x)<1e-5
+                r=100;
+            end
         end
 
         function [ xp ] = GetNextState(Env,x,a)
@@ -110,7 +116,7 @@ classdef  RandomWalk < handle
         function [e] = IsTerminal(Env,x,a)
             
             e = 0;
-            if sse(x)<1e-9
+            if sse(x)<1e-5
                 e=1;
             end
             

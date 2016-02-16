@@ -17,11 +17,51 @@ if nargin>=2
 
 end
 
-function a = GetAction(Env,varargin)
+function [a,mu,sigma] = GetAction(Env,varargin)
+
 
 x = varargin{1};
-u = x(2)-2*x(1);
-a = max(min(u,1),-1);
 
-function [] = UpdatePolicy(Env,varargin)
+
+mu =  Env.W*x;
+
+
+sigma = 0.05;
+
+
+% make sure a is within the 95% boundaries:
+ok95 = 0;
+iter = 0;
+while ~ok95
+    
+    a = normrnd(mu,sigma);
+    if a<(mu+2*sigma) && a>(mu-2*sigma)
+    ok95=1;
+    end
+iter = iter +1;
+if iter>10
+    iter
+    error('max iterations')
+end
+end
+
+
+function score = GetScore(Env,varargin)
+
+x = varargin{1};
+a = varargin{2};
+
+[~,mu,sigma] = GetAction(Env,x);
+
+x1 = x(1);
+x2 = x(2);
+
+
+phi = [x1 x2]; 
+
+% score1 = (a1-mu1)*phi;
+% score2 = (a2-mu2)*phi;
+% 
+ score = (a-mu)*phi;
+
 

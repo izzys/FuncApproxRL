@@ -29,7 +29,7 @@ end
 mu =  Env.W*x;
 
 
-sigma = 0.01;
+sigma = 0.05;
 
 
 % make sure a is within the 95% boundaries:
@@ -44,7 +44,6 @@ while ~ok95
 iter = iter +1;
 if iter>10
     iter
-    error('max iterations')
 end
 end
 

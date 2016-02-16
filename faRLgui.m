@@ -72,9 +72,10 @@ handles.output = hObject;
  % set here method names:
 method_handle = handles.popupmenu2;
 set(method_handle, 'String',{ 'Select method...',...  
-                              'Q actor-critic',...         % Method #1
-                              'TD lambda actor-critic',... % Method #2
-                              'Natural actor-critic',...   % Method #3
+                              'REINFORCE',...               % Method #1
+                              'TD actor-critic',...         % Method #2
+                              'Q actor-critic',...          % Method #3
+                              'Natural actor-critic',...    % Method #4
                               [] } );
 
  % create RL agent:

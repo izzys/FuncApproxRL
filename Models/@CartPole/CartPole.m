@@ -40,7 +40,7 @@ classdef  CartPole < handle
         dA;
         
         %Policy function:
-        Wdim = 2;
+        Wdim = 4;
         W;
     end
     

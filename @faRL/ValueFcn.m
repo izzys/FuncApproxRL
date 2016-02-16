@@ -37,6 +37,25 @@ Q = sum( RL.V(tiles) );
 
 function [] = Plot(RL,varargin)
 
-%text(0,0,num2str(RL.V))
-
+    nS = 100; 
+    x = linspace(RL.Env.x1_min,RL.Env.x1_max,nS);
+    y = linspace(RL.Env.x2_min,RL.Env.x2_max,nS);
+    [X,Y] = meshgrid(x,y);
+    F_approx = zeros(nS,1);
+    
+    for xi=1:nS
+      for yi = 1:nS
+          
+          st = [X(xi,yi), Y(xi,yi)];
+          
+          [F_approx(xi,yi),~] = GetValue(RL,st,1);
+          
+      end
+    end
+    
+    cla
+    hold on
+    meshc( X, Y,F_approx );
+    title( ['approx func. ' ])
+    view(3) 
 

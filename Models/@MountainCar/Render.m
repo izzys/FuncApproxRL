@@ -37,7 +37,7 @@ else if (sign(arrowfactor_x)<0)
  end
 end
 
-pause_time = 0.005;
+pause_time = 0.00;
 
 x_car = s(1);
 y_car = sin(3*x_car);
@@ -49,7 +49,7 @@ CarSize = 55;
 CartColor =[0.7 0 0];
 
 res = 1:0.01:10;
-x_path = Env.p_min:0.01:Env.p_max;
+x_path = Env.x1_min:0.01:Env.x1_max;
 y_path = sin(3*x_path);
 
 arrow_height = 0.5;
@@ -72,7 +72,7 @@ arrow_pos = -0.6;
           'YTickLabel',[]);
       
     axis normal
-    axis([Env.p_min Env.p_max -1 1])
+    axis([Env.x1_min Env.x1_max -1 1])
 
     %Draw path:
     Env.RenderObj.Path = plot(x_path,y_path,'Color',PathColor,'LineWidth',LineWidth);  
@@ -82,7 +82,7 @@ arrow_pos = -0.6;
     Env.RenderObj.Car = plot(x_car,y_car,'Marker','.','Color',CartColor,'MarkerSize',CarSize);  
 
     %Steps count:
-    Env.RenderObj.Text =  text(Env.p_min,-0.95,'steps: ' );
+    Env.RenderObj.Text =  text(Env.x1_min,-0.95,'steps: ' );
             
 
     %Command arrow:

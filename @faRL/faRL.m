@@ -28,9 +28,10 @@ classdef faRL < handle
         % name must match the name of its corresponding scriptin the Methods 
         % folder. Make sure that the list order matches the order of the
         % method list in RLgui:         
-        MethodList = {  'Q_actor_critic',...         % Method #1
-                        'TD_actor_critic',...        % Method #2
-                        'Natural_actor_critic' }     % Method #3
+        MethodList = {  'REINFORCE',...              % Method #1
+                        'TD_actor_critic',...         % Method #2
+                        'Q_actor_critic',...        % Method #3
+                        'Natural_actor_critic' }     % Method #4
         
         % learning parameters:       
         gamma;
@@ -112,7 +113,8 @@ classdef faRL < handle
       %      RL.Wdim = RL.Env.Wdim; % policy function weights
        %     RL.Vdim = 64; % value function weights
             
-            RL.Env.W = unifrnd(-1,1,RL.Env.Adim,RL.Env.Wdim);
+          %  RL.Env.W = unifrnd(-1,1,RL.Env.Adim,RL.Env.Wdim);
+             RL.Env.W = zeros(RL.Env.Adim,RL.Env.Wdim);
            % RL.V = 2*rand(RL.Vdim,1)-1;
             
             
@@ -163,7 +165,7 @@ classdef faRL < handle
             % The total number of binary features (add 2 for safty in hashing): 
             mult_nx = 1;
             for i = 1:length( RL.Env.Xdim )
-                mult_nx = mult_nx*( RL.Env.Xdim(i) + 2 );
+                mult_nx = mult_nx*( RL.Env.Xdim(i));
             end
             
             RL.VnFeatures = RL.VnTilings*mult_nx; 
@@ -171,6 +173,9 @@ classdef faRL < handle
             RL.V_memory_size = RL.VnFeatures ;  
             RL.V = zeros(RL.V_memory_size); 
             RL.Ev = zeros(RL.V_memory_size);
+            sizeV = size(RL.V);
+            disp([ 'created memory with size: ' num2str(sizeV)])
+            
         end
           
         % Start and run the learning process:
