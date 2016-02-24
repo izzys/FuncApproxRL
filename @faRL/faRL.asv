@@ -61,9 +61,8 @@ classdef faRL < handle
         V;
      %   Vdim;
         VnTilings;
-     %   V_memory_size;
+        V_memory_size;
         VnFeatures;
-        TilingOffSet;
         
         % State and action dim:
         Xdim;
@@ -148,49 +147,35 @@ classdef faRL < handle
             ylabel(RL.plot_learning_handle,'Reward') 
             
             % try to MEX the tiles software untill it is done succefluly:
-%             mex_ok = 0;
-%             while ~mex_ok
-%                 try
-%                     mex Tiles\GetTiles_Mex.cpp Tiles\tiles1.cpp Tiles\tiles2.cpp 
-%                     mex_ok = 1;
-%                 catch error
-%                     mex_ok = 0;
-%                     disp(error.message)
-%                     disp('trying to mex again')
-%                 end
-%             end
-            
-            
-            % the number of patches considered to be a unit: 
-            RL.VnTilings     = 16;
-            
-            Ndim = length( RL.Env.Xdim );
-            
-            RL.TilingOffSet =  zeros(1,Ndim);
-                
-            for j = 1:(RL.VnTilings-1)
-                
-                for i = 1:Ndim
-                
-                   OffSet(i) =  unifrnd(-0.5/RL.Env.Xdim(i),0.5/RL.Env.Xdim(i));
+            mex_ok = 0;
+            while ~mex_ok
+                try
+                    mex Tiles\GetTiles_Mex.cpp Tiles\tiles1.cpp Tiles\tiles2.cpp 
+                    mex_ok = 1;
+                catch error
+                    mex_ok = 0;
+                    disp(error.message)
+                    disp('trying to mex again')
                 end
-              RL.TilingOffSet = [RL.TilingOffSet ; OffSet];
             end
             
             
+            % the number of patches considered to be a unit: 
+            RL.VnTilings     = 2^4;
+            TilingOffSet = [ zeros(1,Ndim); unifrnd(-0.5/Xdim(1),0.5/Xdim(1),nTilings,Ndim)];
+            
+            
             % The total number of binary features (add 2 for safty in hashing): 
-%             mult_nx = 1;
-%             for i = 1:length( RL.Env.Xdim )
-%                 mult_nx = mult_nx*( RL.Env.Xdim(i)+2);
-%             end
+            mult_nx = 1;
+            for i = 1:length( RL.Env.Xdim )
+                mult_nx = mult_nx*( RL.Env.Xdim(i)+2);
+            end
             
-            RL.VnFeatures = RL.VnTilings*prod( RL.Env.Xdim );
-            
-          %  RL.VnFeatures = RL.VnTilings*mult_nx; 
+            RL.VnFeatures = RL.VnTilings*mult_nx; 
 
-       %     RL.V_memory_size =2e4;% max( RL.VnFeatures , 2e4) ;  
-            RL.V = zeros(1,RL.VnFeatures); 
-            RL.Ev = zeros(1,RL.VnFeatures);
+            RL.V_memory_size =2e4;% max( RL.VnFeatures , 2e4) ;  
+            RL.V = zeros(RL.V_memory_size); 
+            RL.Ev = zeros(RL.V_memory_size);
             sizeV = size(RL.V);
             disp([ 'created memory with size: ' num2str(sizeV)])
             
@@ -275,7 +260,7 @@ classdef faRL < handle
             end
             
             % reset eligibility traces:
-            RL.Ev = zeros(RL.VnFeatures);
+            RL.Ev = zeros(RL.V_memory_size);
             RL.Etiles = [];
             
             % reset model to initial conditions:

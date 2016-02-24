@@ -18,7 +18,7 @@ It is recommended by the UNH folks that num-tiles be a power of 2, e.g., 16.
 */
 
 #include <iostream>
-#include "tiles.h"
+#include "tiles1.h"
 #include "stdlib.h"
 #include "math.h"
 
@@ -113,7 +113,7 @@ int hash_coordinates(int *coordinates, int num_indices, int memory_size)
 		/* add random table offset for this dimension and wrap around */
 		index = coordinates[i];
 		index += (449 * i);
-		index %= 2048;
+		index %= 2047;
 		while (index < 0) index += 2048;
 			
 		/* add selected random number to sum */

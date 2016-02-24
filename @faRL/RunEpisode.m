@@ -19,7 +19,13 @@ function [total_reward,steps] = RunEpisode(RL,varargin)
         a   = RL.Env.PolicyFcn('GetAction',x);
 
         RL.StopSim = 0;
- 
+         
+        expected_reward = RL.ValueFcn('GetValue',x,a)
+        
+        if expected_reward>0 
+           disp('!') 
+        end
+        
         while steps<RL.max_steps  && ~RL.StopSim 
            % do the selected action and get the next state:   
             xp  = RL.Env.GetNextState( x , a  );    
@@ -37,6 +43,9 @@ function [total_reward,steps] = RunEpisode(RL,varargin)
             [Qp,~] = RL.ValueFcn('GetValue',xp,ap);
             
             delta =  r + RL.gamma*Qp - Q ;
+
+            RL.Etiles = unique( [ RL.Etiles tiles] );
+            
             
             % Update the policy 
             feval(RL.MethodFcn,RL,'UpdatePolicy',x,a,delta,Q);
@@ -62,5 +71,5 @@ function [total_reward,steps] = RunEpisode(RL,varargin)
             end
 
         end
-        
-        W = RL.Env.W  
+
+      %  W = RL.Env.W  

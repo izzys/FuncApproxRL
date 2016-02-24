@@ -15,11 +15,11 @@ classdef  RandomWalk < handle
         % control params:
         a1_min = -1;
         a1_max = 1;
-        a1_dim = 2;
+     %   a1_dim = 2;
         
         a2_min = -1;
         a2_max = 1;
-        a2_dim = 2; 
+    %    a2_dim = 2; 
         
         const_IC = [1 1];
         random_IC = '[unifrnd(RL.Env.x1_min,RL.Env.x1_max) , unifrnd(RL.Env.x2_min,RL.Env.x2_max)]';
@@ -31,7 +31,7 @@ classdef  RandomWalk < handle
         RenderObj;
         
         %Policy function:
-        Wdim = 1;
+        Wdim = 2;
         W; 
 
         % discritixation matrix:
@@ -74,8 +74,8 @@ classdef  RandomWalk < handle
             Env.dX(2) = diff([ Env.x2_min  Env.x2_max ])/ Env.x2_dim ;
 
                    
-            Env.dA(1)  = diff([ Env.a1_min  Env.a1_max ])/ Env.a1_dim; 
-            Env.dA(2)  = diff([ Env.a2_min  Env.a2_max ])/ Env.a2_dim; 
+        %    Env.dA(1)  = diff([ Env.a1_min  Env.a1_max ])/ Env.a1_dim; 
+        %    Env.dA(2)  = diff([ Env.a2_min  Env.a2_max ])/ Env.a2_dim; 
             
         end
 
@@ -83,12 +83,12 @@ classdef  RandomWalk < handle
             
            r = -sse(x);
            
-           if sse(x)<0.1
-                r=5-sse(x);
-            end
-            if sse(x)<1e-5
-                r=100;
-            end
+%            if sse(x)<0.1
+%                 r=5-sse(x);
+%             end
+%             if sse(x)<1e-5
+%                 r=100;
+%             end
         end
 
         function [ xp ] = GetNextState(Env,x,a)

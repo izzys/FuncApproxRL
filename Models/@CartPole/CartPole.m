@@ -104,6 +104,8 @@ classdef  CartPole < handle
             if (x < -4 || x > 4  || theta < -fourtyfive_degrees || theta > fourtyfive_degrees)          
                 r = -10000 - 50*abs(x) - 100*abs(theta);     
             end
+            
+            r=1;
      
         end
 

@@ -24,13 +24,13 @@ a = varargin{2};
 
 % scale our state so that it is within unit intervals:
 for i = 1:length(x)
-xs(i)   = x(i)/( RL.Env.Xdim(i) * RL.Env.dX(i) )+0.5;
+xs(i)   = x(i)/( RL.Env.Xdim(i) * RL.Env.dX(i) );
 end
 
 % scale our action so that it is within unit intervals:
 %as   = 0;%a/RL.Env.dA; 
 
-[ tiles ] = myGetTiles(RL.VnTilings,RL.TilingOffSet,xs,RL.Env.Xdim,0);
+[ tiles ] = myGetTiles(RL.VnTilings,RL.TilingOffSet,xs,RL.Env.Xdim);
 
 %tiles  = GetTiles_Mex(RL.VnTilings,xs,RL.V_memory_size,as);
 Q = sum( RL.V(tiles) ); 

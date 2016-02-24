@@ -25,6 +25,7 @@ for i = 1:RL.Env.Adim
 RL.Env.W(i,:) = RL.Env.W(i,:) + RL.alpha*score(i,:)*delta;
 end
 
+
 function [ ] = UpdateValue( RL , varargin  )
 
 % x = varargin{1};
@@ -36,22 +37,17 @@ function [ ] = UpdateValue( RL , varargin  )
 tiles  = varargin{1};
 delta  = varargin{2};
 
+ if RL.replacing_traces
+     
+    RL.Ev(tiles) = 1;  
+    RL.V(RL.Etiles) =  RL.V(RL.Etiles) + (RL.beta/RL.VnTilings) * delta * RL.Ev(RL.Etiles); 
+    
+    RL.Ev(RL.Etiles) = RL.gamma*RL.lambda*RL.Ev(RL.Etiles);  
 
-
-% if RL.replacing_traces
+else
     
+    RL.Ev(tiles) = RL.Ev(tiles)+1; 
+    RL.V((RL.Etiles)) =  RL.V((RL.Etiles)) + (RL.beta/RL.VnTilings) * delta * RL.Ev(RL.Etiles); 
     
-    %RL.E(:,s) = 0; %fix
-   % RL.E(a,s) = 1;  %fix
-    RL.V(tiles) =  RL.V(tiles) + (RL.beta/RL.VnTilings) * delta ;%* RL.E;  %fix
-    
-    %RL.E = RL.gamma*RL.lambda*RL.E;  %fix
-    
-    
-% else
-%     
-%   %  RL.E(a,s) = RL.E(a,s)+1;  %fix
-%     RL.V(tiles) =  RL.V(tiles) + (RL.beta/RL.VnTilings) * delta ;%* RL.E;  %fix
-%     
-%    % RL.E = RL.gamma*RL.lambda*RL.E;  %fix
-% end
+    RL.Ev(RL.Etiles) = RL.gamma*RL.lambda*RL.Ev(RL.Etiles);  
+ end

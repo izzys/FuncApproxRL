@@ -1,5 +1,5 @@
-#ifndef _TILES_H_
-#define _TILES_H_
+#ifndef _TILES1_H_
+#define _TILES1_H_
 
 #include <stdio.h>
 #include <stdlib.h>

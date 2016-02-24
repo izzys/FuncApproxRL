@@ -79,9 +79,9 @@ classdef  MountainCar < handle
         function [r] = GetReward(Env,s,a)
             
             r=-1;
-            if s(1)>=Env.x1_max
-                r=10;
-            end
+%             if s(1)>=Env.x1_max
+%                 r=1000;
+%             end
      
         end
 

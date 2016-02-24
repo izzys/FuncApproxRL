@@ -29,24 +29,24 @@ end
 mu =  Env.W*x;
 
 
-sigma = 0.01;
+sigma = 0.0001;
 
 
 % make sure a is within the 95% boundaries:
-ok95 = 0;
-iter = 0;
-while ~ok95
-    
+% ok95 = 0;
+% iter = 0;
+% while ~ok95
+%     
     a = normrnd(mu,sigma);
-    if a<(mu+2*sigma) && a>(mu-2*sigma)
-    ok95=1;
-    end
-iter = iter +1;
-if iter>10
-    iter
-    error('max iterations')
-end
-end
+%     if a<(mu+2*sigma) && a>(mu-2*sigma)
+%     ok95=1;
+%     end
+% iter = iter +1;
+% if iter>10
+%     iter
+%     error('max iterations')
+% end
+% end
 
 
 function score = GetScore(Env,varargin)

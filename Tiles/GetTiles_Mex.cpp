@@ -6,7 +6,8 @@
 */
 
 #include <iostream>
-#include "tiles.h"
+#include "tiles1.h"
+#include "tiles2.h"
 #include "stdlib.h"
 #include "math.h"
 #include "mex.h" 
@@ -16,8 +17,9 @@ mexFunction( int nlhs, mxArray *plhs[], int nrhs, const mxArray	*prhs[] )
 {
   int NUM_TILINGS, num_stat_vars, m, n, N, a;
   double *state_vars, *tiles_ptr;
+//  float *state_vars, *tiles_ptr;
   int *tiles_int_ptr, ti; 
-  mxArray *tiles;
+  mxArray *tiles_array;
     
     /* Check for proper number of input and output arguments
        could add more arguments to active the optional arguments ... which are now deactivated */ 
@@ -35,9 +37,10 @@ mexFunction( int nlhs, mxArray *plhs[], int nrhs, const mxArray	*prhs[] )
     NUM_TILINGS = (int) mxGetScalar(prhs[0]);
 
     /* extract the state variables we will generate tiles for (and its dimension) */ 
-    state_vars = mxGetPr(prhs[1]);
-    m = mxGetM(prhs[1]);
-    n = mxGetN(prhs[1]);
+    state_vars =  mxGetPr(prhs[1]);
+   // state_vars = (float *)  mxGetPr(prhs[1]);
+    m = (int) mxGetM(prhs[1]);
+    n = (int) mxGetN(prhs[1]);
     num_stat_vars = 0; 
     if( (m==1) && (n>=1) ){ 
       num_stat_vars = n;
@@ -69,7 +72,11 @@ mexFunction( int nlhs, mxArray *plhs[], int nrhs, const mxArray	*prhs[] )
 
     /* make the call the function that actually does the work
      */
-    GetTiles(tiles_int_ptr,NUM_TILINGS,state_vars,num_stat_vars,N,a,-1,-1);
+     GetTiles(tiles_int_ptr,NUM_TILINGS,state_vars,num_stat_vars,N,a,-1,-1);
+//     
+//     tiles(tiles_int_ptr,NUM_TILINGS,collision_table *ct,state_vars,num_stat_vars);
+    
+ //   tiles(tiles_int_ptr,NUM_TILINGS,N,state_vars,num_stat_vars);    
     
     /*tiles_ptr[0] = 1.0;
     tiles_ptr[1] = 2.0;
@@ -78,13 +85,13 @@ mexFunction( int nlhs, mxArray *plhs[], int nrhs, const mxArray	*prhs[] )
     /* copy from the integer tiles to the double tiles
        -- and convert to ones based indexing (used by Matlab) by adding an additional ONE
      */
-    tiles     = mxCreateDoubleMatrix(1,NUM_TILINGS,mxREAL);
-    tiles_ptr = mxGetPr(tiles); 
+    tiles_array     = mxCreateDoubleMatrix(1,NUM_TILINGS,mxREAL);
+    tiles_ptr = mxGetPr(tiles_array); 
     for( ti=0; ti<NUM_TILINGS; ti++) tiles_ptr[ti] = (double) (tiles_int_ptr[ti]+1);
 
     free(tiles_int_ptr);
 
-    plhs[0] = tiles; /* assign our work to the right hand side */ 
+    plhs[0] = tiles_array; /* assign our work to the right hand side */ 
     
     return; 
 }
